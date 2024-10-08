@@ -1,7 +1,7 @@
 #include <vector>
 #include <fstream>
-#include <deque>
 #include <iostream>
+#include <map>
 
 std::vector<std::string> readFile(std::string_view fileName)
 {
@@ -15,29 +15,53 @@ std::vector<std::string> readFile(std::string_view fileName)
     return rows;
 }
 
+const std::map<std::string, int> numText{
+    {"one", 1},
+    {"two", 2},
+    {"three", 3},
+    {"four", 4},
+    {"five", 5},
+    {"six", 6},
+    {"seven", 7},
+    {"eight", 8},
+    {"nine", 9}};
+
 /**
  * Concatenates the first and last integer values of a given string. If the
  * string contains no integer, return 0.
  */
 int rowAddFirstLast(std::string &str)
 {
-    std::deque<int> digits{};
-    for (int i = 0; i < str.length(); i++)
+    std::map<int, int> digits{};
+
+    for (auto &textAndValue : numText)
     {
-        char current = str.at(i);
-        if (isdigit(current))
+        int pos = str.find(textAndValue.first);
+        while (pos != std::string::npos)
         {
-            digits.push_back(current - '0'); // Gets the integer value of the given digit.
+            digits[pos] = textAndValue.second;
+            pos = str.find(textAndValue.first, ++pos);
         }
     }
-
-    return digits.size() != 0 ? digits.front() * 10 + digits.back() : 0;
+    for (int i = 0; i < str.length(); i++)
+    {
+        char &current = str.at(i);
+        if (isdigit(current))
+        {
+            digits[i] = current - '0';
+        }
+    }
+    for (auto &t : digits)
+    {
+        std::cout << "First: " << t.first << " Second: " << t.second << "\n";
+    }
+    return digits.size() != 0 ? digits.begin()->second * 10 + std::prev(digits.end())->second : 0;
 }
 
 int calibrate(std::vector<std::string> &vec)
 {
     int sum{0};
-    for (std::string row : vec)
+    for (std::string &row : vec)
     {
         sum += rowAddFirstLast(row);
     }
