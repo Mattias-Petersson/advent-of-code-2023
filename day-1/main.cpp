@@ -45,7 +45,7 @@ int rowAddFirstLast(std::string &str)
     }
     for (int i = 0; i < str.length(); i++)
     {
-        char &current = str.at(i);
+        char current = str.at(i);
         if (isdigit(current))
         {
             digits[i] = current - '0';
