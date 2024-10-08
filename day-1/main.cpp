@@ -1,6 +1,7 @@
 #include <vector>
-#include <iostream>
 #include <fstream>
+#include <deque>
+#include <iostream>
 
 std::vector<std::string> readFile(std::string_view fileName)
 {
@@ -14,13 +15,23 @@ std::vector<std::string> readFile(std::string_view fileName)
     return rows;
 }
 
-int main()
+/**
+ * Concatenates the first and last integer values of a given string. If the
+ * string contains no integer, return 0.
+ */
+int rowAddFirstLast(std::string &str)
 {
-    std::vector<std::string> rows{readFile({"calibrations.txt"})};
-    for (std::string row : rows)
+    std::deque<int> digits{};
+    for (int i = 0; i < str.length(); i++)
     {
-        std::cout << row << "\n";
+        char current = str.at(i);
+        if (isdigit(current))
+        {
+            digits.push_back(current - '0'); // Gets the integer value of the given digit.
+        }
     }
+
+    return digits.size() != 0 ? digits.front() * 10 + digits.back() : 0;
 }
 
 int calibrate(std::vector<std::string> &vec)
@@ -28,7 +39,14 @@ int calibrate(std::vector<std::string> &vec)
     int sum{0};
     for (std::string row : vec)
     {
-        std::cout << row << "\n";
+        sum += rowAddFirstLast(row);
     }
-    return 0;
+    return sum;
+}
+
+int main()
+{
+    std::vector<std::string> rows{readFile({"calibrations.txt"})};
+    int res{calibrate(rows)};
+    std::cout << res;
 }
