@@ -51,10 +51,6 @@ int rowAddFirstLast(std::string &str)
             digits[i] = current - '0';
         }
     }
-    for (auto &t : digits)
-    {
-        std::cout << "First: " << t.first << " Second: " << t.second << "\n";
-    }
     return digits.size() != 0 ? digits.begin()->second * 10 + std::prev(digits.end())->second : 0;
 }
 
