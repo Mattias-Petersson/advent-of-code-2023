@@ -2,18 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-
-std::vector<std::string> readFile(std::string_view fileName)
-{
-    std::vector<std::string> rows{};
-    std::ifstream file(fileName.data());
-    std::string element;
-    while (file >> element)
-    {
-        rows.push_back(element);
-    }
-    return rows;
-}
+#include "../utils/readFile.cpp"
 
 const std::map<std::string, int> numText{
     {"one", 1},
