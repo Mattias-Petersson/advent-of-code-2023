@@ -2,6 +2,7 @@
 #include "../utils/readFile.cpp"
 #include <sstream>
 #include <map>
+#include <numeric>
 
 int getIdx(const std::string &sessionString)
 {
@@ -28,7 +29,6 @@ struct Game
 Game makeGame(std::string &gameString)
 {
     std::map<std::string, int> m;
-    gameString = std::regex_replace(gameString, std::regex(","), ""); // Remove commas to make a clean map entry.
     std::istringstream stream(gameString);
     std::string color;
     int num;
@@ -39,34 +39,69 @@ Game makeGame(std::string &gameString)
     return Game(m["red"], m["green"], m["blue"]);
 }
 
-int idxIfPossible(const std::string &sessionString, const Game &compareGame)
+std::vector<Game> getGames(const std::string &sessionString)
 {
+    std::vector<Game> games{};
     auto delimiter{sessionString.find(":")};
-    int skip = 2; // "Remove the symbol and the space after it, i.e. "; ".
+    std::string modifiedString = std::regex_replace(sessionString, std::regex(","), ""); // Remove commas to make a clean map entry.
+    int skip = 2;                                                                        // "Remove the symbol and the space after it, i.e. "; ".
     while (delimiter != std::string::npos)
     {
         delimiter += skip;
         auto oldIndex = delimiter;
-        delimiter = sessionString.find(";", delimiter);
-        std::string partGame = sessionString.substr(oldIndex, delimiter - oldIndex);
-        Game game = makeGame(partGame);
-        if (!game.canBePlayed(compareGame))
-        {
-            return 0;
-        }
+        delimiter = modifiedString.find(";", delimiter);
+        std::string partGame = modifiedString.substr(oldIndex, delimiter - oldIndex);
+        games.push_back(makeGame(partGame));
     }
-    return getIdx(sessionString);
+    return games;
+}
+
+int idxIfPossible(const std::string &sessionString, const Game &compareGame)
+{
+    std::vector<Game> games = getGames(sessionString);
+    if (std::all_of(games.begin(), games.end(), [&](const Game &g)
+                    { return g.canBePlayed(compareGame); }))
+    {
+        return getIdx(sessionString);
+    }
+    return 0; // We do not need the index if all games are not possible, return 0.
+}
+
+int prodOfLeast(const std::string &sessionString)
+{
+    std::vector<Game> games = getGames(sessionString);
+    std::unordered_map<std::string, int> largest{
+        {"red", 0}, {"green", 0}, {"blue", 0}};
+    for (const auto &game : games)
+    {
+        largest["red"] = std::max(largest["red"], game.redCubes);
+        largest["green"] = std::max(largest["green"], game.greenCubes);
+        largest["blue"] = std::max(largest["blue"], game.blueCubes);
+    }
+    return largest["red"] * largest["green"] * largest["blue"];
+}
+
+void partOne(const std::vector<std::string> &rows)
+{
+    Game gameToCompare(12, 13, 14);
+    int sum = std::accumulate(rows.begin(), rows.end(), 0, [&](int old, const std::string &row)
+                              { return old + idxIfPossible(row, gameToCompare); });
+
+    std::cout << "The sum of the index of all possible games is " << sum << "\n";
+}
+
+void partTwo(const std::vector<std::string> &rows)
+{
+    int sum = std::accumulate(rows.begin(), rows.end(), 0, [](int old, const std::string &row)
+                              { return old + prodOfLeast(row); });
+
+    std::cout << "The sum of the power of all sets is " << sum << "\n";
 }
 
 int main()
 {
     std::vector<std::string> rows{readFile({"games.txt"})};
-    Game gameToCompare(12, 13, 14);
-    int sum{};
-    for (auto &row : rows)
-    {
-        sum += idxIfPossible(row, gameToCompare);
-    }
-    std::cout << "The sum of the index of all possible games is " << sum << "\n";
+    partOne(rows);
+    partTwo(rows);
     return 0;
 }
