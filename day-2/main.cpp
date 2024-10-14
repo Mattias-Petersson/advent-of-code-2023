@@ -3,6 +3,7 @@
 #include <sstream>
 #include <map>
 #include <numeric>
+#include <chrono>
 
 int getIdx(const std::string &sessionString)
 {
@@ -28,7 +29,7 @@ struct Game
 
 Game makeGame(std::string &gameString)
 {
-    std::map<std::string, int> m;
+    std::unordered_map<std::string, int> m;
     std::istringstream stream(gameString);
     std::string color;
     int num;
@@ -42,15 +43,15 @@ Game makeGame(std::string &gameString)
 std::vector<Game> getGames(const std::string &sessionString)
 {
     std::vector<Game> games{};
-    auto delimiter{sessionString.find(":")};
+    size_t delimiter{sessionString.find(":")};
     std::string modifiedString = std::regex_replace(sessionString, std::regex(","), ""); // Remove commas to make a clean map entry.
     int skip = 2;                                                                        // "Remove the symbol and the space after it, i.e. "; ".
     while (delimiter != std::string::npos)
     {
         delimiter += skip;
-        auto oldIndex = delimiter;
+        size_t oldIndex{delimiter};
         delimiter = modifiedString.find(";", delimiter);
-        std::string partGame = modifiedString.substr(oldIndex, delimiter - oldIndex);
+        std::string partGame{modifiedString.substr(oldIndex, delimiter - oldIndex)};
         games.push_back(makeGame(partGame));
     }
     return games;
